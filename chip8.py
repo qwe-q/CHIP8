@@ -130,6 +130,7 @@ class Chip8:
         ins = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
         self.pc += 2
         header = (ins & 0xF000) >> 12
+
         match header:
             case 0x0:
                 match ins:
@@ -154,14 +155,21 @@ class Chip8:
                 self.memory[self.sp + 1] = self.pc & 0xFF00
             case 0x3:
                 # skip if equals
-                x = ins & 0x0F00
+                (x, _) = Chip8.grabxandy(ins)
+                
                 nn = ins & 0x00FF
                 if self.regs[x] == nn:
                     self.pc += 2
+            case 0x4:
+                (x, _) = Chip8.grabxandy(ins)
+
+                nn = ins & 0x00FF
+                if self.regs[x] != nn:
+                    self.pc += 2
+
             case 0x5:
                 # skip if equals
-                x = ins & 0x0f00
-                y = ins & 0x00f0
+                (x, y) = Chip8.grabxandy(ins)
                 if self.regs[x] == self.regs[y]:
                     self.pc += 2
 
@@ -219,8 +227,7 @@ class Chip8:
 
             case 0x9:
                 # skip if not equals
-                x = ins & 0x0f00
-                y = ins & 0x00f0
+                (x, y) = Chip8.grabxandy(ins)
                 if self.regs[x] != self.regs[y]:
                     self.pc += 2
             case 0xA:
