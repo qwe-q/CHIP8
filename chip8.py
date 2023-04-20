@@ -127,7 +127,9 @@ class Chip8:
         return 0x0
 
     def execute(self):
+        #print(self.pc)
         ins = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
+        print(hex(ins))
         self.pc += 2
         header = (ins & 0xF000) >> 12
 
@@ -142,7 +144,8 @@ class Chip8:
                         self.sp += 2
                         self.pc = self.memory[self.sp -
                                               1] << 8 | self.memory[self.sp]
-
+                    case _:
+                        raise Exception(f"Invalid key: {hex(ins)}")
             case 0x1:
                 # Jump
                 self.pc = ins & 0x0FFF
@@ -156,7 +159,7 @@ class Chip8:
             case 0x3:
                 # skip if equals
                 (x, _) = Chip8.grabxandy(ins)
-                
+
                 nn = ins & 0x00FF
                 if self.regs[x] == nn:
                     self.pc += 2
@@ -224,7 +227,8 @@ class Chip8:
                         # set and shift left. lost bit saved in 0xf
                         self.regs[0xf] = self.regs[y] >> 15
                         self.regs[x] = self.regs[y] << 1
-
+                    case _:
+                        raise Exception(f"Invalid key {hex(ins)}")
             case 0x9:
                 # skip if not equals
                 (x, y) = Chip8.grabxandy(ins)
@@ -241,8 +245,9 @@ class Chip8:
             case 0xC:
                 # generates a random number an ANDS it to NN from C
                 # put the result in X
-                rand = random.randint(0, 0xFFFFFFFFFFFFFFFF)
-                self.regs[ins & 0x0F00] = rand & (0x00FF & ins)
+                rand = random.randint(0, 0xFFFF)
+                (x, _) = Chip8.grabxandy(ins)
+                self.regs[x] = uint16(rand) & (0x00FF & ins)
             case 0xD:
                 # Display instruction
                 x = self.regs[(ins & 0x0F00) >> 8]
@@ -275,6 +280,8 @@ class Chip8:
                     case 0xA1:
                         if self.regs[(ins & 0x0F00) >> 8] != self.pressed_key:
                             self.pc += 2
+                    case _:
+                        raise Exception(f"Invalid key {hex(ins)}")
             case 0xF:
                 # manipulates timers
                 (x, _) = self.grabxandy(ins)
@@ -318,9 +325,10 @@ class Chip8:
                     case 0x65:
                         for i in range(0, x + 1):
                             self.regs[i] = self.memory[self.i + i]
-
+                    case _:
+                        raise Exception(f"Invalid key {hex(ins)}")
             case _:
-                raise Exception("key invalid")
+                raise Exception(f"Invalid key {hex(ins)}")
 
 
 if __name__ == "__main__":
