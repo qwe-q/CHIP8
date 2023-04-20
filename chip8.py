@@ -14,8 +14,12 @@ class Chip8:
     # width = 640
     def __init__(self, path: str):
         pygame.init()
-        self.screen = pygame.display.set_mode(
-            (width, height), pygame.RESIZABLE)
+        self.screen = pygame.Surface((width, height))
+        # self.screen = pygame.display.set_mode(
+        #     (width, height), pygame.RESIZABLE)
+
+        self.windisplay = pygame.display.set_mode(
+            (width * 16, height * 16), pygame.RESIZABLE)
         self.memory = [uint8(0)] * 4096
         self.pc = uint16(0x200)
         self.i = uint16(0)
@@ -105,6 +109,10 @@ class Chip8:
                 pixel = self.display[x + y * 64]
                 if pixel == 1:
                     pygame.draw.rect(self.screen, white, (x, y, 1, 1))
+        scaled_win = pygame.transform.smoothscale(
+            self.screen, self.windisplay.get_size())
+        self.windisplay.blit(scaled_win, (0, 0))
+        pygame.display.flip()
         pygame.display.update()
 
     def grabpressedkey(self) -> int:
