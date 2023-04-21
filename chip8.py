@@ -127,7 +127,7 @@ class Chip8:
         return 0x0
 
     def execute(self):
-        #print(self.pc)
+        # print(self.pc)
         ins = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
         print(hex(ins))
         self.pc += 2
@@ -345,3 +345,4 @@ if __name__ == "__main__":
                 quit()
 
         chip8.execute()
+        sleep(1/60)
