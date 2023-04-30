@@ -6,6 +6,9 @@ import random
 from time import sleep
 import multiprocessing
 
+import pygame_gui
+from os import listdir
+from os.path import isfile, join
 width = 64
 height = 32
 
@@ -332,17 +335,82 @@ class Chip8:
 
 
 if __name__ == "__main__":
+    rom_chosen: bool
+    chip8: Chip8
+    pygame.init()
+    chosen_rom: str
     if len(sys.argv) != 2:
-        print("Usage: chip8.py PATH_TO_CHIP8_ROM")
-        sys.exit(-1)
-    chip8 = Chip8(sys.argv[1])
+        rom_chosen = False
+        # print("Usage: chip8.py PATH_TO_CHIP8_ROM")
+        # sys.exit(-1)
+    else:
+        chosen_rom = sys.argv[1]
+        chip8 = Chip8(chosen_rom)
+        rom_chosen = True
 
     while True:
-        # handle events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+        if not rom_chosen:
+            pygame.display.set_caption('Quick Start')
+            window_surface = pygame.display.set_mode((800, 600))
 
-        chip8.execute()
-        sleep(1/60)
+            background = pygame.Surface((800, 600))
+            background.fill(pygame.Color('#000000'))
+
+            manager = pygame_gui.UIManager((800, 600))
+
+            # hello_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 275), (100, 50)),
+            #                                             text='Say Hello',
+            #                                             manager=manager)
+
+        #     data = [
+        # ('File/Save',  fnc_save, None),
+        # ('File/New', fnc_new, None),
+        # ('Edit/Copy', fnc_copy, None),
+        # ('Edit/Cut', fnc_cut, None),
+        # ('Help/About', fnc_help, help_about_content),
+        # ('Help/Reference', fnc_help, help_reference_content),
+        # ]
+            mypath = "roms/games"
+            roms = [i for i in listdir(mypath) if isfile(join(mypath, i))]
+            chosen_rom = roms[0]
+            w = pygame_gui.elements.UIDropDownMenu(
+                roms, manager=manager,
+                starting_option=chosen_rom, relative_rect=pygame.Rect((350, 275), (100, 50)))
+
+            button = pygame_gui.elements.UIButton(
+                pygame.Rect((350, 350), (150, 50)), text="run rom", manager=manager, )
+
+            clock = pygame.time.Clock()
+            is_running = True
+
+            while not rom_chosen:
+                time_delta = clock.tick(60)/1000.0
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        sys.exit(0)
+                    if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == button:
+                            rom_chosen = True
+                            chip8 = Chip8(join("roms/games", chosen_rom))
+                            break
+                    if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
+                        chosen_rom = event.text
+
+                    manager.process_events(event)
+
+                manager.update(time_delta)
+
+                window_surface.blit(background, (0, 0))
+                manager.draw_ui(window_surface)
+
+                pygame.display.update()
+            print("done")
+        else:
+            # handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
+            chip8.execute()
+            sleep(1/60)
