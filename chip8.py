@@ -373,6 +373,15 @@ if __name__ == "__main__":
             mypath = "roms/games"
             roms = [i for i in listdir(mypath) if isfile(join(mypath, i))]
             chosen_rom = roms[0]
+            # Logic to select the last chosen ROM by default 
+            try:
+                with open(join(mypath, "stored_rom.bin"), "r") as f:
+                    previously_chosen_rom = f.readline()
+                    if previously_chosen_rom in roms:
+                        chosen_rom = previously_chosen_rom
+            except:
+                # The file doesn't exist/is corrupted/etc., do nothing!
+                pass
             w = pygame_gui.elements.UIDropDownMenu(
                 roms, manager=manager,
                 starting_option=chosen_rom, relative_rect=pygame.Rect((350, 275), (100, 50)))
@@ -392,6 +401,9 @@ if __name__ == "__main__":
                         if event.ui_element == button:
                             rom_chosen = True
                             chip8 = Chip8(join("roms/games", chosen_rom))
+                            # Save the chosen ROM
+                            with open(join(mypath, "stored_rom.bin"), "w") as f:
+                                f.write(chosen_rom)
                             break
                     if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                         chosen_rom = event.text
