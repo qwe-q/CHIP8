@@ -2,7 +2,7 @@ import sys
 from typing import Union
 import pygame
 from numpy import uint8, uint16, unpackbits
-import random
+import secrets
 from time import sleep
 import multiprocessing
 
@@ -245,7 +245,7 @@ class Chip8:
             case 0xC:
                 # generates a random number an ANDS it to NN from C
                 # put the result in X
-                rand = random.randint(0, 0xFFFF)
+                rand = secrets.randbits(16)
                 (x, _) = Chip8.grabxandy(ins)
                 self.regs[x] = uint16(rand) & (0x00FF & ins)
             case 0xD:
